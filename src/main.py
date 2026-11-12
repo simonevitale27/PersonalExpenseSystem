@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from datetime import datetime # per gestire il formato della data
 
 DB_FILE = "spese.db"
 SQL_FILE = "sql/database.sql"
@@ -27,12 +28,65 @@ def gestione_categorie():
 
     cursore = conn.execute("SELECT id FROM categorie WHERE nome = ?", (nome,))
     if cursore.fetchone() is not None:
-        print("Errore: la categoria esiste già.")
+        print("La categoria esiste già.")
         return
 
     conn.execute("INSERT INTO categorie (nome) VALUES (?)", (nome,))
     conn.commit()
-    print("Categoria inserita correttamente!")
+    print("Categoria inserita correttamente.")
+
+def inserisci_spesa():
+    # Funzione per inserire una spesa nel database
+    # Data: la richiedo finché non è valida (Invio vuoto = annulla)
+    while True:
+        data = input("Data (YYYY-MM-DD, Invio per annullare): ").strip()
+        if data == "":
+            print("Operazione annullata.")
+            return
+        try:
+            datetime.strptime(data, "%Y-%m-%d")
+            break
+        except ValueError:
+            print("Errore: la data deve essere nel formato YYYY-MM-DD.")
+
+    while True:
+        testo_importo = input("Importo (Invio per annullare): ").strip().replace(",", ".")
+        if testo_importo == "":
+            print("Operazione annullata.")
+            return
+        try:
+            importo = float(testo_importo)
+
+        except ValueError:
+            print("Errore: l'importo deve essere un numero valido.")
+            continue
+        if importo <= 0:
+            print("Errore: l'importo deve essere maggiore di zero.")
+        else:
+            break
+
+    while True:
+        nome_categoria = input("Categoria (Invio per annullare): ").strip()
+        if nome_categoria == "":
+            print("Operazione annullata.")
+            return
+        cursore = conn.execute("SELECT id FROM categorie WHERE nome = ?", (nome_categoria,))
+        riga = cursore.fetchone()
+        if riga is None:
+            print("Errore: la categoria non esiste.")
+        else:
+            categoria_id = riga[0]
+            break
+
+    # Descrizione facoltativa
+    descrizione = input("Descrizione (facoltativa): ").strip()
+    if descrizione == "":
+        descrizione = None
+
+    # Inserimento della spesa con la chiave esterna categoria_id
+    conn.execute("INSERT INTO spese (data, importo, descrizione, categoria_id) VALUES (?, ?, ?, ?)",(data, importo, descrizione, categoria_id),)
+    conn.commit()
+    print("Spesa inserita correttamente.")
 
 print("Benvenuto nel sistema di gestione delle Spese Personali!")
 while True:
@@ -53,7 +107,7 @@ while True:
         case "1":
             gestione_categorie()
         case "2":
-            print("Hai selezionato l'opzione: Inserisci Spesa")
+            inserisci_spesa()
         case "3":
             print("Hai selezionato l'opzione: Definisci Budget Mensile")
         case "4":
