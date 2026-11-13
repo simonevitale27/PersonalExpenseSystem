@@ -88,6 +88,60 @@ def inserisci_spesa():
     conn.commit()
     print("Spesa inserita correttamente.")
 
+def definisci_budget():
+    while True:
+        mese = input("Mese (YYYY-MM, Invio per annullare): ").strip()
+        if mese == "":
+            print("Operazione annullata.")
+            return
+        try:
+            datetime.strptime(mese, "%Y-%m")
+            break
+        except ValueError:
+            print("Errore: il mese deve essere nel formato YYYY-MM.")
+
+    while True:
+        nome_categoria = input("Categoria (Invio per annullare): ").strip()
+        if nome_categoria == "":
+            print("Operazione annullata.")
+            return
+        cursore = conn.execute("SELECT id FROM categorie WHERE nome = ?", (nome_categoria,))
+        riga = cursore.fetchone()
+        if riga is None:
+            print("Errore: la categoria non esiste.")
+        else:
+            categoria_id = riga[0]
+            break
+
+    while True:
+        testo_importo = input("Importo (Invio per annullare): ").strip().replace(",", ".")
+        if testo_importo == "":
+            print("Operazione annullata.")
+            return
+        try:
+            importo = float(testo_importo)
+        except ValueError:
+            print("Errore: l'importo deve essere un numero valido.")
+            continue
+        if importo <= 0:
+            print("Errore: l'importo deve essere maggiore di zero.")
+        else:
+            break
+
+    # controllo esistenza Budget
+    cursore = conn.execute(
+        "SELECT id FROM budget WHERE mese = ? AND categoria_id = ?",
+        (mese, categoria_id),
+    )
+    if cursore.fetchone() is None:
+        conn.execute("INSERT INTO budget (mese, importo, categoria_id) VALUES (?, ?, ?)",(mese, importo, categoria_id),)
+    else:
+        conn.execute("UPDATE budget SET importo = ? WHERE mese = ? AND categoria_id = ?", (importo, mese, categoria_id))
+
+    conn.commit()
+    print("Budget mensile salvato correttamente.")
+
+
 print("Benvenuto nel sistema di gestione delle Spese Personali!")
 while True:
     print("---------------------------------")
@@ -109,7 +163,7 @@ while True:
         case "2":
             inserisci_spesa()
         case "3":
-            print("Hai selezionato l'opzione: Definisci Budget Mensile")
+            definisci_budget()
         case "4":
             print("Hai selezionato l'opzione: Visualizza Report")
         case "5":
