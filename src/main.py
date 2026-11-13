@@ -1,9 +1,13 @@
 import os
 import sqlite3
+import math
 from datetime import datetime # per gestire il formato della data
 
-DB_FILE = "spese.db"
-SQL_FILE = "sql/database.sql"
+# Cartella del progetto, ricavata dalla posizione di questo file (src/main.py),
+# così il programma trova i suoi file da qualunque cartella venga avviato
+CARTELLA_PROGETTO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_FILE = os.path.join(CARTELLA_PROGETTO, "spese.db")
+SQL_FILE = os.path.join(CARTELLA_PROGETTO, "sql", "database.sql")
 
 # creazione al primo avvio del database
 primo_avvio = not os.path.exists(DB_FILE)
@@ -60,7 +64,9 @@ def inserisci_spesa():
         except ValueError:
             print("Errore: l'importo deve essere un numero valido.")
             continue
-        if importo <= 0:
+        if not math.isfinite(importo):
+            print("Errore: l'importo deve essere un numero valido.")
+        elif importo <= 0:
             print("Errore: l'importo deve essere maggiore di zero.")
         else:
             break
@@ -123,7 +129,9 @@ def definisci_budget():
         except ValueError:
             print("Errore: l'importo deve essere un numero valido.")
             continue
-        if importo <= 0:
+        if not math.isfinite(importo):
+            print("Errore: l'importo deve essere un numero valido.")
+        elif importo <= 0:
             print("Errore: l'importo deve essere maggiore di zero.")
         else:
             break
@@ -224,7 +232,7 @@ def visualizza_report():
         print("3. Elenco completo delle spese ordinate per data")
         print("4. Ritorna al menu principale")
         print("---------------------------------")
-        scelta_report = input("Inserisci la tua scelta: ")
+        scelta_report = input("Inserisci la tua scelta: ").strip()
 
         match scelta_report:
             case "1":
@@ -250,7 +258,7 @@ while True:
     print("4. Visualizza Report")
     print("5. Esci")
     print("---------------------------------")
-    scelta = input("Inserisci la tua scelta: ")
+    scelta = input("Inserisci la tua scelta: ").strip()
 
     # Ho realizzato "switch" richiesto dalla traccia con il costrutto match-case, 
     # trovato dopo delle ricerche disponibile da Python 3.10
