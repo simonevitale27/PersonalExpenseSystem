@@ -141,6 +141,103 @@ def definisci_budget():
     conn.commit()
     print("Budget mensile salvato correttamente.")
 
+def report_totale_categorie():
+    # Report della somma delle spese raggruppate per categoria
+    cursore = conn.execute(
+        "SELECT categorie.nome, SUM(spese.importo) "
+        "FROM spese "
+        "JOIN categorie ON spese.categoria_id = categorie.id "
+        "GROUP BY categorie.nome "
+        "ORDER BY categorie.nome"
+    )
+    righe = cursore.fetchall()
+
+    if len(righe) == 0:
+        print("Nessuna spesa registrata.")
+        return
+
+    print(f"{'Categoria':.<20}Totale Speso")
+    for nome, totale in righe:
+        print(f"{nome:.<20}{totale:.2f}")
+
+def report_mensile_budget():
+    # Report 2: per budget, totale speso nel mese e categoria
+    cursore = conn.execute(
+        "SELECT budget.mese, categorie.nome, budget.importo, "
+        "COALESCE(SUM(spese.importo), 0) "
+        "FROM budget "
+        "JOIN categorie ON budget.categoria_id = categorie.id "
+        "LEFT JOIN spese ON spese.categoria_id = budget.categoria_id "
+        "AND substr(spese.data, 1, 7) = budget.mese "
+        "GROUP BY budget.id "
+        "ORDER BY budget.mese, categorie.nome"
+    )
+    righe = cursore.fetchall()
+
+    if len(righe) == 0:
+        print("Nessun budget definito.")
+        return
+
+    for mese, categoria, budget, speso in righe:
+        # Confronto con il budget tramite if/else, come richiesto dalla traccia
+        if speso > budget:
+            stato = "SUPERAMENTO BUDGET"
+        else:
+            stato = "BUDGET RISPETTATO"
+
+        print()
+        print("Mese:", mese)
+        print("Categoria:", categoria)
+        print(f"Budget: {budget:.2f}")
+        print(f"Speso: {speso:.2f}")
+        print("Stato:", stato)
+
+def report_elenco_spese():
+    # Report 3: tutte le spese per data
+    cursore = conn.execute(
+        "SELECT spese.data, categorie.nome, spese.importo, spese.descrizione "
+        "FROM spese "
+        "JOIN categorie ON spese.categoria_id = categorie.id "
+        "ORDER BY spese.data, spese.id"
+    )
+    righe = cursore.fetchall()
+
+    if len(righe) == 0:
+        print("Nessuna spesa registrata.")
+        return
+
+    print(f"{'Data':<12}{'Categoria':<14}{'Importo':>9}  Descrizione")
+    print("-" * 50)
+    for data, categoria, importo, descrizione in righe:
+        if descrizione is None:
+            descrizione = ""
+        print(f"{data:<12}{categoria:<14}{importo:>9.2f}  {descrizione}")
+
+def visualizza_report():
+    # Sottomenu dei report
+    while True:
+        print("---------------------------------")
+        print("REPORT")
+        print("---------------------------------")
+        print("1. Totale spese per categoria")
+        print("2. Spese mensili vs budget")
+        print("3. Elenco completo delle spese ordinate per data")
+        print("4. Ritorna al menu principale")
+        print("---------------------------------")
+        scelta_report = input("Inserisci la tua scelta: ")
+
+        match scelta_report:
+            case "1":
+                report_totale_categorie()
+            case "2":
+                report_mensile_budget()
+            case "3":
+                report_elenco_spese()
+            case "4":
+                break
+            case _:
+                print("Scelta non valida. Riprovare.")
+
 
 print("Benvenuto nel sistema di gestione delle Spese Personali!")
 while True:
@@ -165,7 +262,7 @@ while True:
         case "3":
             definisci_budget()
         case "4":
-            print("Hai selezionato l'opzione: Visualizza Report")
+            visualizza_report()
         case "5":
             print("Arrivederci!")
             conn.close()
