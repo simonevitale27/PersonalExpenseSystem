@@ -50,7 +50,7 @@ PersonalExpenseSystem/
 
 - **Lo switch richiesto dalla traccia.** Python non ha lo switch del C/C++: al suo
   posto ho usato match/case, disponibile da Python 3.10, che funziona allo stesso
-  modo. Il caso "case _"fa da "default" e gestisce le scelte non valide. Allo stesso
+  modo. Il caso "case _" fa da "default" e gestisce le scelte non valide. Allo stesso
   modo, cout e cin sono sostituiti da print() e input().
 - **La validazione degli input.** Ogni dato viene controllato appena l'utente lo
   inserisce, se è sbagliato il programma mostra un messaggio di errore
