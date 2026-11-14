@@ -20,7 +20,7 @@ Progetto finale di Fondamenti di Informatica, Vitale Simone
 
 Non è richiesta compilazione: Python è un linguaggio interpretato.
 
-[Link al repository GitHub: lo aggiungiamo dopo la pubblicazione.]
+Repository GitHub: https://github.com/simonevitale27/PersonalExpenseSystem
 
 ## Avvio
 
